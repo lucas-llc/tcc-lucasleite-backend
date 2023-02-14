@@ -1,6 +1,10 @@
 package sigma.app.api.controller.signature;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -28,9 +32,13 @@ public class SignatureController {
 		repository.save(signature);
 	}
 	
-//	@GetMapping(value="/{id}")
-//	public SignatureDTO GetSignature(@PathVariable String id) {
-//		Signature signature = repository.findById(Long.valueOf(id)).get();
-//		return new SignatureDTO(signature.)
+	@GetMapping
+	public Page<SignatureDTO> GetSignature(Pageable pageable) {
+		return repository.findAll(pageable).map(SignatureDTO::new);
+	}
+	
+//	@GetMapping
+//	public List<SignatureDTO> GetSignature(@PathVariable String id) {
+//		return repository.findAll().stream().map(SignatureDTO::new).toList();
 //	}
 }
