@@ -1,13 +1,13 @@
 package sigma.app.api.controller.signature;
 
-import java.util.List;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -32,13 +32,28 @@ public class SignatureController {
 		repository.save(signature);
 	}
 	
+	@PutMapping
+	@Transactional
+	public void UpdateSignature(@RequestBody @Valid SignatureDTO signatureObject) {
+		Signature signature = repository.getReferenceById(signatureObject.id());
+		signature.setName(signatureObject.name());
+		signature.setDescription(signatureObject.description());
+		signature.setPrice(signatureObject.price());
+	}
+	
 	@GetMapping
-	public Page<SignatureDTO> GetSignature(Pageable pageable) {
+	public Page<SignatureDTO> ListSignature(Pageable pageable) {
 		return repository.findAll(pageable).map(SignatureDTO::new);
 	}
 	
-//	@GetMapping
-//	public List<SignatureDTO> GetSignature(@PathVariable String id) {
-//		return repository.findAll().stream().map(SignatureDTO::new).toList();
-//	}
+	@GetMapping("/{id}")
+	public SignatureDTO GetSignature(@PathVariable String id) {
+		return new SignatureDTO(repository.getReferenceById(Long.valueOf(id)));
+	}
+	
+	@DeleteMapping("/{id}")
+	@Transactional
+	public void DeleteSignature(@PathVariable String id) {
+		repository.deleteById(Long.valueOf(id));
+	}
 }
