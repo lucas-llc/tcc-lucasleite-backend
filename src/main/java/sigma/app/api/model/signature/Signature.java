@@ -1,17 +1,16 @@
 package sigma.app.api.model.signature;
 
+import java.util.Date;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
-import lombok.AllArgsConstructor;
-import lombok.EqualsAndHashCode;
-import lombok.NoArgsConstructor;
+import sigma.app.api.model.user.User;
 import sigma.app.api.object.signature.SignatureDTO;
 
 @Entity
-@Table(name="signature")
+@Table(name="SIGNATURE")
 public class Signature {
 
 	public Signature() {}
@@ -31,6 +30,22 @@ public class Signature {
 	private String description;
 	
 	private Double price;
+	
+	private Date startDate;
+	
+	private SignatureFrequency frequency;
+	
+	private SignatureStatus status;
+	
+	private boolean sendPush;
+	
+	private String currency;
+	
+	private String iconImage;
+	
+	@jakarta.persistence.ManyToOne(targetEntity=User.class)
+	@jakarta.persistence.JoinColumn(name = "USER_ID")
+	private User user;
 
 	public Long getId() {
 		return id;
@@ -62,6 +77,62 @@ public class Signature {
 
 	public void setPrice(Double price) {
 		this.price = price;
+	}
+
+	public SignatureFrequency getFrequency() {
+		return frequency;
+	}
+
+	public void setFrequency(SignatureFrequency frequency) {
+		this.frequency = frequency;
+	}
+
+	public Date getStartDate() {
+		return startDate;
+	}
+
+	public void setStartDate(Date startDate) {
+		this.startDate = startDate;
+	}
+
+	public SignatureStatus getStatus() {
+		return status;
+	}
+
+	public void setStatus(SignatureStatus status) {
+		this.status = status;
+	}
+
+	public boolean isSendPush() {
+		return sendPush;
+	}
+
+	public void setSendPush(boolean sendPush) {
+		this.sendPush = sendPush;
+	}
+
+	public String getCurrency() {
+		return currency;
+	}
+
+	public void setCurrency(String currency) {
+		this.currency = currency;
+	}
+
+	public String getIconImage() {
+		return iconImage;
+	}
+
+	public void setIconImage(String iconImage) {
+		this.iconImage = iconImage;
+	}
+
+	public User getUser() {
+		return user;
+	}
+
+	public void setUser(User user) {
+		this.user = user;
 	}
 	
 }
