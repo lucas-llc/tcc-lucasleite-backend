@@ -1,7 +1,6 @@
 package sigma.app.api.controller.signature;
 
 import java.net.URI;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -46,6 +45,12 @@ public class SignatureController {
 		signature.setName(signatureObject.name());
 		signature.setDescription(signatureObject.description());
 		signature.setPrice(signatureObject.price());
+		signature.setStartDate(signature.getStartDate());
+		signature.setFrequency(signature.getFrequency());
+		signature.setStatus(signature.getStatus());
+		signature.setSendPush(signature.isSendPush());
+		signature.setCurrency(signature.getCurrency());
+		signature.setIconImage(signature.getIconImage());
 		
 		SignatureDTO signatureDTO = new SignatureDTO(signature);
 		

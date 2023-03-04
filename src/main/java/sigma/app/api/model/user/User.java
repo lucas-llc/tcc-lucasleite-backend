@@ -8,7 +8,7 @@ import jakarta.persistence.Table;
 import sigma.app.api.object.user.UserDTO;
 
 @Entity
-@Table(name="USER")
+@Table(name="USERS")
 public class User {
 
 	public User() {}

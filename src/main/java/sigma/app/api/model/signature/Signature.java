@@ -1,6 +1,8 @@
 package sigma.app.api.model.signature;
 
 import java.util.Date;
+
+
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -19,6 +21,12 @@ public class Signature {
 		this.name = signatureObject.name();
 		this.description = signatureObject.description();
 		this.price = signatureObject.price();
+		this.startDate = signatureObject.startDate();
+		this.frequency = SignatureFrequency.valueOf(signatureObject.frequency());
+		this.status = SignatureStatus.valueOf(signatureObject.status());
+		this.sendPush = signatureObject.sendPush();
+		this.currency = signatureObject.currency();
+		this.iconImage = signatureObject.iconImage();
 	}
 
 	@Id
@@ -33,8 +41,10 @@ public class Signature {
 	
 	private Date startDate;
 	
+	@jakarta.persistence.Enumerated(jakarta.persistence.EnumType.STRING)
 	private SignatureFrequency frequency;
 	
+	@jakarta.persistence.Enumerated(jakarta.persistence.EnumType.STRING)
 	private SignatureStatus status;
 	
 	private boolean sendPush;
