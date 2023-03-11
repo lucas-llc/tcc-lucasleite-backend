@@ -17,16 +17,17 @@ public class Signature {
 
 	public Signature() {}
 	
-	public Signature(SignatureDTO signatureObject) {
-		this.name = signatureObject.name();
-		this.description = signatureObject.description();
-		this.price = signatureObject.price();
-		this.startDate = signatureObject.startDate();
-		this.frequency = SignatureFrequency.valueOf(signatureObject.frequency());
-		this.status = SignatureStatus.valueOf(signatureObject.status());
-		this.sendPush = signatureObject.sendPush();
-		this.currency = signatureObject.currency();
-		this.iconImage = signatureObject.iconImage();
+	public Signature(SignatureDTO signatureObject, User user) {
+		this.name = signatureObject.getName();
+		this.description = signatureObject.getDescription();
+		this.price = signatureObject.getPrice();
+		this.startDate = signatureObject.getStartDate();
+		this.frequency = SignatureFrequency.valueOf(signatureObject.getFrequency());
+		this.status = SignatureStatus.valueOf(signatureObject.getStatus());
+		this.sendPush = signatureObject.isSendPush();
+		this.currency = signatureObject.getCurrency();
+		this.iconImage = signatureObject.getIconImage();
+		this.user = user;
 	}
 
 	@Id
