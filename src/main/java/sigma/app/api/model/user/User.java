@@ -6,7 +6,9 @@ import java.util.List;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -18,13 +20,19 @@ import sigma.app.api.object.user.UserDTO;
 @Table(name="USERS")
 public class User implements UserDetails {
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+
 	public User() {}
 	
 	public User(UserDTO userDTO) {
-		this.id = userDTO.id();
-		this.name = userDTO.name();
-		this.email = userDTO.email();
-		this.password = userDTO.password();
+		this.id = userDTO.getId();
+		this.name = userDTO.getName();
+		this.lastName = userDTO.getLastName();
+		this.email = userDTO.getEmail();
+		this.password = new BCryptPasswordEncoder().encode(userDTO.getPassword());
 	}
 	
 	@Id
@@ -32,6 +40,9 @@ public class User implements UserDetails {
 	private Long id;
 	
 	private String name;
+	
+	@Column(name="LAST_NAME")
+	private String lastName;
 	
 	private String email;
 	
@@ -51,6 +62,14 @@ public class User implements UserDetails {
 
 	public void setName(String name) {
 		this.name = name;
+	}
+	
+	public String getLastName() {
+		return lastName;
+	}
+
+	public void setLastName(String lastName) {
+		this.lastName = lastName;
 	}
 
 	public String getEmail() {

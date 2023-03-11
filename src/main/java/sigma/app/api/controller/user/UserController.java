@@ -2,10 +2,13 @@ package sigma.app.api.controller.user;
 
 import java.net.URI;
 
+import jakarta.servlet.http.HttpServletRequest;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -17,10 +20,10 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import jakarta.transaction.Transactional;
-import jakarta.validation.Valid;
 import sigma.app.api.model.user.User;
 import sigma.app.api.object.user.UserDTO;
 import sigma.app.api.repository.user.UserRepository;
+import sigma.app.api.service.TokenService;
 
 @RestController
 @RequestMapping("/user")
@@ -28,10 +31,24 @@ public class UserController {
 	
 	@Autowired
 	UserRepository userRepository;
+	
+	@Autowired
+	TokenService tokenService;
+	
+	public UserDetails getUserByToken(HttpServletRequest request) {
+		String authorizationHeader = request.getHeader("Authorization");
+		if (authorizationHeader != null) {
+			String tokenJWT =  authorizationHeader.replace("Bearer ", "");
+			String subject = tokenService.getSubject(tokenJWT);
+			UserDetails user = userRepository.findByEmail(subject);
+			return user;
+		}
+		return null;
+	}
 
 	@PostMapping
 	@Transactional
-	public  ResponseEntity<UserDTO> CreateUser(@RequestBody @Valid UserDTO userObject, UriComponentsBuilder uriBuilder) {
+	public  ResponseEntity<UserDTO> CreateUser(@RequestBody UserDTO userObject, UriComponentsBuilder uriBuilder) {
 		User user = new User(userObject);
 		userRepository.save(user);
 		UserDTO userDTO = new UserDTO(user);
@@ -41,11 +58,12 @@ public class UserController {
 	
 	@PutMapping
 	@Transactional
-	public ResponseEntity<UserDTO> UpdateUser(@RequestBody @Valid UserDTO userObject) {
-		User user = userRepository.getReferenceById(userObject.id());
-		user.setName(userObject.name());
-		user.setPassword(userObject.password());
-		user.setEmail(userObject.email());
+	public ResponseEntity<UserDTO> UpdateUser(@RequestBody UserDTO userObject) {
+		User user = userRepository.getReferenceById(userObject.getId());
+		user.setName(userObject.getName());
+		user.setLastName(userObject.getLastName());
+		user.setPassword(userObject.getPassword());
+		user.setEmail(userObject.getEmail());
 		
 		UserDTO userDTO = new UserDTO(user);
 		
@@ -60,9 +78,22 @@ public class UserController {
 	}
 	
 	@GetMapping("/{id}")
-	public  ResponseEntity<UserDTO> GetUser(@PathVariable String id) {
+	public ResponseEntity<UserDTO> GetUser(@PathVariable String id) {
 		UserDTO userDTO = new UserDTO(userRepository.getReferenceById(Long.valueOf(id)));
 		return ResponseEntity.ok(userDTO);
+	}
+	
+	@GetMapping("/logged")
+	public ResponseEntity<UserDTO> GetLoggedUser(HttpServletRequest request) {
+		UserDetails user = this.getUserByToken(request);
+		UserDTO userDTO = new UserDTO(userRepository.findUserByEmail(user.getUsername()));
+		return ResponseEntity.ok(userDTO);
+	}
+	
+	public UserDTO GetLoggedUserDTO(HttpServletRequest request) {
+		UserDetails user = this.getUserByToken(request);
+		UserDTO userDTO = new UserDTO(userRepository.findUserByEmail(user.getUsername()));
+		return userDTO;
 	}
 	
 	@SuppressWarnings("rawtypes")
