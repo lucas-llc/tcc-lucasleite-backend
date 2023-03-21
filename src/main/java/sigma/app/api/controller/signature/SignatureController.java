@@ -2,6 +2,9 @@ package sigma.app.api.controller.signature;
 
 import java.net.URI;
 import java.text.DecimalFormat;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -21,6 +24,8 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.transaction.Transactional;
 import sigma.app.api.controller.user.UserController;
 import sigma.app.api.model.signature.Signature;
+import sigma.app.api.model.signature.SignatureDateComparator;
+import sigma.app.api.model.signature.SignatureStatus;
 import sigma.app.api.model.user.User;
 import sigma.app.api.object.signature.SignatureDTO;
 import sigma.app.api.object.signature.SignatureTotalPrices;
@@ -46,7 +51,7 @@ public class SignatureController {
 	@PostMapping
 	@Transactional
 	public  ResponseEntity<SignatureDTO> createSignature(HttpServletRequest request, @RequestBody SignatureDTO signatureObject, UriComponentsBuilder uriBuilder) {
-		UserDTO userDTO = userController.GetLoggedUserDTO(request);
+		UserDTO userDTO = userController.getLoggedUserDTO(request);
 		User user = new User(userDTO);
 		Signature signature = new Signature(signatureObject, user);
 		repository.save(signature);
@@ -74,10 +79,26 @@ public class SignatureController {
 		return ResponseEntity.ok(signatureDTO);
 	}
 	
+	@PutMapping("/changeStatus/{id}")
+	@Transactional
+	public ResponseEntity<SignatureDTO> changeStatus(@PathVariable String id) {
+		Signature signature = repository.getReferenceById(Long.valueOf(id));
+		if(signature.getStatus().equals(SignatureStatus.ATIVO)) {
+			signature.setStatus(SignatureStatus.INATIVO);
+		} else {
+			signature.setStatus(SignatureStatus.ATIVO);
+		}
+		
+		SignatureDTO signatureDTO = new SignatureDTO(signature);
+		
+		return ResponseEntity.ok(signatureDTO);
+	}
+	
 	@GetMapping
 	public ResponseEntity<List<SignatureDTO>> listSignature(HttpServletRequest request) {
-		UserDTO user = userController.GetLoggedUserDTO(request);
-		List<SignatureDTO> result =  repository.listSignatureByUser(user.getId()).stream().map(SignatureDTO::new).collect(Collectors.toList());
+		UserDTO user = userController.getLoggedUserDTO(request);
+		String status = request.getParameter("status");
+		List<SignatureDTO> result =  repository.listSignatureByUser(user.getId(), (status != null && !status.isEmpty()) ? status : "ATIVO").stream().map(SignatureDTO::new).collect(Collectors.toList());
 		return ResponseEntity.ok(result);
 	}
 	
@@ -97,8 +118,8 @@ public class SignatureController {
 	
 	@GetMapping("/total")
 	public ResponseEntity<SignatureTotalPrices> getTotalPrices(HttpServletRequest request) {
-		UserDTO user = userController.GetLoggedUserDTO(request);
-		List<SignatureDTO> result =  repository.listSignatureByUser(user.getId()).stream().map(SignatureDTO::new).collect(Collectors.toList());
+		UserDTO user = userController.getLoggedUserDTO(request);
+		List<SignatureDTO> result =  repository.listSignatureByUser(user.getId(), "ATIVO").stream().map(SignatureDTO::new).collect(Collectors.toList());
 		
 		Double total = 0.0;
 		for (SignatureDTO signatureDTO : result) {
@@ -127,5 +148,70 @@ public class SignatureController {
 		signatureTotalPrices.setYearlyTotal(df.format(total));
 		
 		return ResponseEntity.ok(signatureTotalPrices);
+	}
+	
+	@GetMapping("/calendar")
+	public ResponseEntity<List<SignatureDTO>> getCalendar(HttpServletRequest request) {
+		UserDTO user = userController.getLoggedUserDTO(request);
+		List<SignatureDTO> signatureList =  repository.listSignatureByUser(user.getId(), "ATIVO").stream().map(SignatureDTO::new).collect(Collectors.toList());
+		List<SignatureDTO> result = new ArrayList<SignatureDTO>();
+		Calendar todayCalendar = Calendar.getInstance();
+		Calendar startCalendar = Calendar.getInstance();
+		int meses = 0;
+		for (SignatureDTO signatureDTO : signatureList) {
+			meses = 0;
+			switch(signatureDTO.getFrequency()) {
+				case "MENSAL":
+					startCalendar.setTime(signatureDTO.getStartDate());
+					startCalendar.set(Calendar.MONTH, todayCalendar.get(Calendar.MONTH));
+					signatureDTO.setNextPaymentDate(startCalendar.getTime());
+					result.add(signatureDTO);
+					break;
+				case "BIMESTRAL":
+					startCalendar.setTime(signatureDTO.getStartDate());
+					meses = (todayCalendar.get(Calendar.YEAR) * 12 + todayCalendar.get(Calendar.MONTH))
+			        - (startCalendar.get(Calendar.YEAR) * 12 + startCalendar.get(Calendar.MONTH));
+					if (meses%2 == 0) {
+						startCalendar.set(Calendar.MONTH, todayCalendar.get(Calendar.MONTH));
+						signatureDTO.setNextPaymentDate(startCalendar.getTime());
+						result.add(signatureDTO);
+					}
+					break;
+				case "TRIMESTRAL":
+					startCalendar.setTime(signatureDTO.getStartDate());
+					meses = (todayCalendar.get(Calendar.YEAR) * 12 + todayCalendar.get(Calendar.MONTH))
+			        - (startCalendar.get(Calendar.YEAR) * 12 + startCalendar.get(Calendar.MONTH));
+					if (meses%3 == 0) {
+						startCalendar.set(Calendar.MONTH, todayCalendar.get(Calendar.MONTH));
+						signatureDTO.setNextPaymentDate(startCalendar.getTime());
+						result.add(signatureDTO);
+					}
+					break;
+				case "SEMESTRAL":
+					startCalendar.setTime(signatureDTO.getStartDate());
+					meses = (todayCalendar.get(Calendar.YEAR) * 12 + todayCalendar.get(Calendar.MONTH))
+			        - (startCalendar.get(Calendar.YEAR) * 12 + startCalendar.get(Calendar.MONTH));
+					if (meses%6 == 0) {
+						startCalendar.set(Calendar.MONTH, todayCalendar.get(Calendar.MONTH));
+						signatureDTO.setNextPaymentDate(startCalendar.getTime());
+						result.add(signatureDTO);
+					}
+					break;
+				case "ANUAL":
+					startCalendar.setTime(signatureDTO.getStartDate());
+					meses = (todayCalendar.get(Calendar.YEAR) * 12 + todayCalendar.get(Calendar.MONTH))
+			        - (startCalendar.get(Calendar.YEAR) * 12 + startCalendar.get(Calendar.MONTH));
+					if (meses%12 == 0) {
+						startCalendar.set(Calendar.MONTH, todayCalendar.get(Calendar.MONTH));
+						signatureDTO.setNextPaymentDate(startCalendar.getTime());
+						result.add(signatureDTO);
+					}
+					break;
+			}
+		}
+		
+		Collections.sort(result, new SignatureDateComparator());
+		
+		return ResponseEntity.ok(result);
 	}
 }

@@ -9,6 +9,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -48,7 +49,7 @@ public class UserController {
 
 	@PostMapping
 	@Transactional
-	public  ResponseEntity<UserDTO> CreateUser(@RequestBody UserDTO userObject, UriComponentsBuilder uriBuilder) {
+	public  ResponseEntity<UserDTO> createUser(@RequestBody UserDTO userObject, UriComponentsBuilder uriBuilder) {
 		User user = new User(userObject);
 		userRepository.save(user);
 		UserDTO userDTO = new UserDTO(user);
@@ -58,12 +59,15 @@ public class UserController {
 	
 	@PutMapping
 	@Transactional
-	public ResponseEntity<UserDTO> UpdateUser(@RequestBody UserDTO userObject) {
+	public ResponseEntity<UserDTO> updateUser(@RequestBody UserDTO userObject) {
 		User user = userRepository.getReferenceById(userObject.getId());
 		user.setName(userObject.getName());
 		user.setLastName(userObject.getLastName());
-		user.setPassword(userObject.getPassword());
 		user.setEmail(userObject.getEmail());
+		
+		if(userObject.getPassword() != null && !userObject.getPassword().isEmpty()) {
+			user.setPassword(new BCryptPasswordEncoder().encode(userObject.getPassword()));
+		}
 		
 		UserDTO userDTO = new UserDTO(user);
 		
@@ -72,25 +76,25 @@ public class UserController {
 	
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	@GetMapping
-	public ResponseEntity<Page<UserDTO>> ListUser(Pageable pageable) {
+	public ResponseEntity<Page<UserDTO>> listUser(Pageable pageable) {
 		Page page =  userRepository.findAll(pageable).map(UserDTO::new);
 		return ResponseEntity.ok(page);
 	}
 	
 	@GetMapping("/{id}")
-	public ResponseEntity<UserDTO> GetUser(@PathVariable String id) {
+	public ResponseEntity<UserDTO> getUser(@PathVariable String id) {
 		UserDTO userDTO = new UserDTO(userRepository.getReferenceById(Long.valueOf(id)));
 		return ResponseEntity.ok(userDTO);
 	}
 	
 	@GetMapping("/logged")
-	public ResponseEntity<UserDTO> GetLoggedUser(HttpServletRequest request) {
+	public ResponseEntity<UserDTO> getLoggedUser(HttpServletRequest request) {
 		UserDetails user = this.getUserByToken(request);
 		UserDTO userDTO = new UserDTO(userRepository.findUserByEmail(user.getUsername()));
 		return ResponseEntity.ok(userDTO);
 	}
 	
-	public UserDTO GetLoggedUserDTO(HttpServletRequest request) {
+	public UserDTO getLoggedUserDTO(HttpServletRequest request) {
 		UserDetails user = this.getUserByToken(request);
 		UserDTO userDTO = new UserDTO(userRepository.findUserByEmail(user.getUsername()));
 		return userDTO;
@@ -99,7 +103,7 @@ public class UserController {
 	@SuppressWarnings("rawtypes")
 	@DeleteMapping("/{id}")
 	@Transactional
-	public ResponseEntity DeleteUser(@PathVariable String id) {
+	public ResponseEntity deleteUser(@PathVariable String id) {
 		userRepository.deleteById(Long.valueOf(id));
 		return ResponseEntity.noContent().build();
 	}

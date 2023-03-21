@@ -16,6 +16,7 @@ public class SignatureDTO {
 	private String currency;
 	private String iconImage;
 	private Long userId;
+	private Date nextPaymentDate;
 	
 	public SignatureDTO() {
 		
@@ -24,7 +25,7 @@ public class SignatureDTO {
 	public SignatureDTO(Signature signature) {
 		this.id = signature.getId();
 		this.name = signature.getName();
-		this.description = signature.getName();
+		this.description = signature.getDescription();
 		this.startDate = signature.getStartDate();
 		this.price = signature.getPrice();
 		this.status = signature.getStatus().value;
@@ -121,6 +122,14 @@ public class SignatureDTO {
 
 	public void setUserId(Long userId) {
 		this.userId = userId;
+	}
+
+	public Date getNextPaymentDate() {
+		return nextPaymentDate;
+	}
+
+	public void setNextPaymentDate(Date nextPaymentDate) {
+		this.nextPaymentDate = nextPaymentDate;
 	}
 	
 }
