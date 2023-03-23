@@ -153,9 +153,11 @@ public class SignatureController {
 	@GetMapping("/calendar")
 	public ResponseEntity<List<SignatureDTO>> getCalendar(HttpServletRequest request) {
 		UserDTO user = userController.getLoggedUserDTO(request);
+		int month = Integer.valueOf(request.getParameter("month"));
 		List<SignatureDTO> signatureList =  repository.listSignatureByUser(user.getId(), "ATIVO").stream().map(SignatureDTO::new).collect(Collectors.toList());
 		List<SignatureDTO> result = new ArrayList<SignatureDTO>();
 		Calendar todayCalendar = Calendar.getInstance();
+		todayCalendar.set(Calendar.MONTH, month);
 		Calendar startCalendar = Calendar.getInstance();
 		int meses = 0;
 		for (SignatureDTO signatureDTO : signatureList) {
@@ -164,6 +166,7 @@ public class SignatureController {
 				case "MENSAL":
 					startCalendar.setTime(signatureDTO.getStartDate());
 					startCalendar.set(Calendar.MONTH, todayCalendar.get(Calendar.MONTH));
+					startCalendar.set(Calendar.YEAR, todayCalendar.get(Calendar.YEAR));
 					signatureDTO.setNextPaymentDate(startCalendar.getTime());
 					result.add(signatureDTO);
 					break;
@@ -173,6 +176,7 @@ public class SignatureController {
 			        - (startCalendar.get(Calendar.YEAR) * 12 + startCalendar.get(Calendar.MONTH));
 					if (meses%2 == 0) {
 						startCalendar.set(Calendar.MONTH, todayCalendar.get(Calendar.MONTH));
+						startCalendar.set(Calendar.YEAR, todayCalendar.get(Calendar.YEAR));
 						signatureDTO.setNextPaymentDate(startCalendar.getTime());
 						result.add(signatureDTO);
 					}
@@ -183,6 +187,7 @@ public class SignatureController {
 			        - (startCalendar.get(Calendar.YEAR) * 12 + startCalendar.get(Calendar.MONTH));
 					if (meses%3 == 0) {
 						startCalendar.set(Calendar.MONTH, todayCalendar.get(Calendar.MONTH));
+						startCalendar.set(Calendar.YEAR, todayCalendar.get(Calendar.YEAR));
 						signatureDTO.setNextPaymentDate(startCalendar.getTime());
 						result.add(signatureDTO);
 					}
@@ -193,6 +198,7 @@ public class SignatureController {
 			        - (startCalendar.get(Calendar.YEAR) * 12 + startCalendar.get(Calendar.MONTH));
 					if (meses%6 == 0) {
 						startCalendar.set(Calendar.MONTH, todayCalendar.get(Calendar.MONTH));
+						startCalendar.set(Calendar.YEAR, todayCalendar.get(Calendar.YEAR));
 						signatureDTO.setNextPaymentDate(startCalendar.getTime());
 						result.add(signatureDTO);
 					}
@@ -203,6 +209,7 @@ public class SignatureController {
 			        - (startCalendar.get(Calendar.YEAR) * 12 + startCalendar.get(Calendar.MONTH));
 					if (meses%12 == 0) {
 						startCalendar.set(Calendar.MONTH, todayCalendar.get(Calendar.MONTH));
+						startCalendar.set(Calendar.YEAR, todayCalendar.get(Calendar.YEAR));
 						signatureDTO.setNextPaymentDate(startCalendar.getTime());
 						result.add(signatureDTO);
 					}
