@@ -1,13 +1,14 @@
 package sigma.app.api.model.signature;
 
+import java.util.Collection;
 import java.util.Date;
-
-
+import org.hibernate.annotations.Cascade;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import sigma.app.api.model.keywords.Keywords;
 import sigma.app.api.model.user.User;
 import sigma.app.api.object.signature.SignatureDTO;
 
@@ -57,6 +58,11 @@ public class Signature {
 	@jakarta.persistence.ManyToOne(targetEntity=User.class)
 	@jakarta.persistence.JoinColumn(name = "USER_ID")
 	private User user;
+	
+	@Cascade(org.hibernate.annotations.CascadeType.SAVE_UPDATE)
+	@jakarta.persistence.ManyToMany(targetEntity=Keywords.class)
+	@jakarta.persistence.JoinTable(name="SIGNATURE_KEYWORDS")
+	private Collection<Keywords> keywords;
 
 	public Long getId() {
 		return id;
@@ -144,6 +150,14 @@ public class Signature {
 
 	public void setUser(User user) {
 		this.user = user;
+	}
+
+	public Collection<Keywords> getKeywords() {
+		return keywords;
+	}
+
+	public void setKeywords(Collection<Keywords> keywords) {
+		this.keywords = keywords;
 	}
 	
 }

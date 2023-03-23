@@ -1,7 +1,11 @@
 package sigma.app.api.object.signature;
 
 import java.util.Date;
+import java.util.List;
+
+import sigma.app.api.model.keywords.Keywords;
 import sigma.app.api.model.signature.Signature;
+import sigma.app.api.object.keywords.KeywordsDTO;
 
 public class SignatureDTO {
 	
@@ -17,6 +21,7 @@ public class SignatureDTO {
 	private String iconImage;
 	private Long userId;
 	private Date nextPaymentDate;
+	private List<KeywordsDTO> keywords;
 	
 	public SignatureDTO() {
 		
@@ -34,6 +39,15 @@ public class SignatureDTO {
 		this.currency = signature.getCurrency();
 		this.iconImage = signature.getIconImage();
 		this.userId = signature.getUser().getId();
+		
+		if(signature.getKeywords() != null) {
+			for (Keywords keywords : signature.getKeywords()) {
+				KeywordsDTO keywordsDTO = new KeywordsDTO();
+				keywordsDTO.setName(keywords.getName());
+				keywordsDTO.setDescription(keywords.getDescription());
+				this.keywords.add(keywordsDTO);
+			}
+		}
 	}
 
 	public Long getId() {
@@ -130,6 +144,14 @@ public class SignatureDTO {
 
 	public void setNextPaymentDate(Date nextPaymentDate) {
 		this.nextPaymentDate = nextPaymentDate;
+	}
+
+	public List<KeywordsDTO> getKeywords() {
+		return keywords;
+	}
+
+	public void setKeywords(List<KeywordsDTO> keywords) {
+		this.keywords = keywords;
 	}
 	
 }
