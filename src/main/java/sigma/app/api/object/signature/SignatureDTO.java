@@ -1,5 +1,6 @@
 package sigma.app.api.object.signature;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -40,9 +41,11 @@ public class SignatureDTO {
 		this.iconImage = signature.getIconImage();
 		this.userId = signature.getUser().getId();
 		
+		this.keywords = new ArrayList<KeywordsDTO>();
 		if(signature.getKeywords() != null) {
 			for (Keywords keywords : signature.getKeywords()) {
 				KeywordsDTO keywordsDTO = new KeywordsDTO();
+				keywordsDTO.setId(keywords.getId());
 				keywordsDTO.setName(keywords.getName());
 				keywordsDTO.setDescription(keywords.getDescription());
 				this.keywords.add(keywordsDTO);

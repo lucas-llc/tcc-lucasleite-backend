@@ -23,10 +23,12 @@ import org.springframework.web.util.UriComponentsBuilder;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.transaction.Transactional;
 import sigma.app.api.controller.user.UserController;
+import sigma.app.api.model.keywords.Keywords;
 import sigma.app.api.model.signature.Signature;
 import sigma.app.api.model.signature.SignatureDateComparator;
 import sigma.app.api.model.signature.SignatureStatus;
 import sigma.app.api.model.user.User;
+import sigma.app.api.object.keywords.KeywordsDTO;
 import sigma.app.api.object.signature.SignatureDTO;
 import sigma.app.api.object.signature.SignatureTotalPrices;
 import sigma.app.api.object.user.UserDTO;
@@ -73,6 +75,16 @@ public class SignatureController {
 		signature.setSendPush(signature.isSendPush());
 		signature.setCurrency(signature.getCurrency());
 		signature.setIconImage(signature.getIconImage());
+		
+		List<Keywords> keywordsList = new ArrayList<Keywords>();
+		if(signatureObject.getKeywords() != null) {
+			for (KeywordsDTO keywords : signatureObject.getKeywords()) {
+				Keywords key = new Keywords();
+				key.setId(keywords.getId());
+				keywordsList.add(key);
+			}
+		}
+		signature.setKeywords(keywordsList);
 		
 		SignatureDTO signatureDTO = new SignatureDTO(signature);
 		

@@ -1,10 +1,24 @@
 package sigma.app.api.object.keywords;
 
+import sigma.app.api.model.keywords.Keywords;
+
 public class KeywordsDTO {
 
 	private long id;
 	private String name;
 	private String description;
+	private Long userId;
+	
+	public KeywordsDTO() {
+		
+	}
+	
+	public KeywordsDTO(Keywords keywords) {
+		this.id = keywords.getId();
+		this.name = keywords.getName();
+		this.description = keywords.getDescription();
+		this.userId = keywords.getUser().getId();
+	}
 	
 	public String getName() {
 		return name;
@@ -23,6 +37,14 @@ public class KeywordsDTO {
 	}
 	public void setId(long id) {
 		this.id = id;
+	}
+
+	public Long getUserId() {
+		return userId;
+	}
+
+	public void setUserId(Long userId) {
+		this.userId = userId;
 	}
 	
 }
