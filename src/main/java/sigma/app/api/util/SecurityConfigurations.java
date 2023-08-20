@@ -25,7 +25,7 @@ public class SecurityConfigurations {
 	public SecurityFilterChain securyFilterChain(HttpSecurity http) throws Exception {
 		return http.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
 				.and().csrf().disable().cors().and().authorizeHttpRequests()
-				.requestMatchers(HttpMethod.POST, "/login").permitAll().requestMatchers(HttpMethod.POST, "/user").permitAll()
+				.requestMatchers(HttpMethod.POST, "/login").permitAll().requestMatchers(HttpMethod.POST, "/user").permitAll().requestMatchers(HttpMethod.GET, "/user/email/{email}").permitAll()
 				.anyRequest().authenticated()
 				.and().addFilterBefore(securityFilter, UsernamePasswordAuthenticationFilter.class)
 				.build();

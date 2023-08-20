@@ -87,6 +87,16 @@ public class UserController {
 		return ResponseEntity.ok(userDTO);
 	}
 	
+	@GetMapping("/email/{email}")
+	public ResponseEntity<Boolean> getUserByEmail(@PathVariable String email) {
+		UserDTO userDTO = new UserDTO(userRepository.findUserByEmail(email));
+		if(userDTO.getId() > 0) {
+			return ResponseEntity.ok(true);
+		} else {
+			return ResponseEntity.ok(false);
+		}
+	}
+	
 	@GetMapping("/logged")
 	public ResponseEntity<UserDTO> getLoggedUser(HttpServletRequest request) {
 		UserDetails user = this.getUserByToken(request);
