@@ -128,6 +128,40 @@ public class SignatureController {
 		return ResponseEntity.noContent().build();
 	}
 	
+	@GetMapping("/spent/{id}")
+	public ResponseEntity<SignatureTotalPrices> getTotalPrices(HttpServletRequest request, @PathVariable String id) {
+		SignatureDTO signatureDTO = new SignatureDTO(repository.getReferenceById(Long.valueOf(id)));
+		
+		Calendar todayCalendar = Calendar.getInstance();
+		Calendar startCalendar = Calendar.getInstance();
+		startCalendar.setTime(signatureDTO.getStartDate());
+		int meses = 0;
+		meses = (todayCalendar.get(Calendar.YEAR) * 12 + todayCalendar.get(Calendar.MONTH))
+		        - (startCalendar.get(Calendar.YEAR) * 12 + startCalendar.get(Calendar.MONTH));
+		
+		SignatureTotalPrices signatureTotalPrices = new SignatureTotalPrices();
+		
+		switch (signatureDTO.getFrequency()) {
+		case "MENSAL":
+			signatureTotalPrices.setTotalSpent(df.format((meses + 1) * signatureDTO.getPrice()));
+			break;
+		case "BIMESTRAL":
+			signatureTotalPrices.setTotalSpent(df.format(((meses/2) + 1) * signatureDTO.getPrice()));
+			break;
+		case "TRIMESTRAL":
+			signatureTotalPrices.setTotalSpent(df.format(((meses/4) + 1) * signatureDTO.getPrice()));
+			break;
+		case "SEMESTRAL":
+			signatureTotalPrices.setTotalSpent(df.format(((meses/6) + 1) * signatureDTO.getPrice()));
+			break;
+		case "ANUAL":
+			signatureTotalPrices.setTotalSpent(df.format(((meses/12) + 1) * signatureDTO.getPrice()));
+			break;
+		}
+		
+		return ResponseEntity.ok(signatureTotalPrices);
+	}
+	
 	@GetMapping("/total")
 	public ResponseEntity<SignatureTotalPrices> getTotalPrices(HttpServletRequest request) {
 		UserDTO user = userController.getLoggedUserDTO(request);
