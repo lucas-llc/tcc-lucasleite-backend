@@ -8,6 +8,7 @@ public class KeywordsDTO {
 	private String name;
 	private String description;
 	private Long userId;
+	private Long signatureCount;
 	
 	public KeywordsDTO() {
 		
@@ -45,6 +46,14 @@ public class KeywordsDTO {
 
 	public void setUserId(Long userId) {
 		this.userId = userId;
+	}
+
+	public Long getSignatureCount() {
+		return signatureCount;
+	}
+
+	public void setSignatureCount(Long signatureCount) {
+		this.signatureCount = signatureCount;
 	}
 	
 }

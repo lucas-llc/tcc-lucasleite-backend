@@ -120,6 +120,18 @@ public class SignatureController {
 		return ResponseEntity.ok(signatureDTO);
 	}
 	
+	@GetMapping("/list/byCategory/{id}")
+	public ResponseEntity<List<SignatureDTO>> listSignatureByCategory(HttpServletRequest request, @PathVariable String id) {
+		UserDTO user = userController.getLoggedUserDTO(request);
+		List<SignatureDTO> result =  repository.listSignatureByCategory(user.getId(), Long.valueOf(id)).stream().map(SignatureDTO::new).collect(Collectors.toList());
+		return ResponseEntity.ok(result);
+	}
+	
+	public long countSignatureByCategory(long userId, long categoryId) {
+		long result =  repository.countSignatureByCategory(userId, categoryId);
+		return result;
+	}
+	
 	@SuppressWarnings("rawtypes")
 	@DeleteMapping("/{id}")
 	@Transactional
@@ -166,6 +178,40 @@ public class SignatureController {
 	public ResponseEntity<SignatureTotalPrices> getTotalPrices(HttpServletRequest request) {
 		UserDTO user = userController.getLoggedUserDTO(request);
 		List<SignatureDTO> result =  repository.listSignatureByUser(user.getId(), "ATIVO").stream().map(SignatureDTO::new).collect(Collectors.toList());
+		
+		Double total = 0.0;
+		for (SignatureDTO signatureDTO : result) {
+			switch(signatureDTO.getFrequency()) {
+				case "MENSAL":
+					total += signatureDTO.getPrice()*12;
+					break;
+				case "BIMESTRAL":
+					total += signatureDTO.getPrice()*6;
+					break;
+				case "TRIMESTRAL":
+					total += signatureDTO.getPrice()*4;
+					break;
+				case "SEMESTRAL":
+					total += signatureDTO.getPrice()*2;
+					break;
+				case "ANUAL":
+					total += signatureDTO.getPrice();
+					break;
+			}
+		}
+		
+		SignatureTotalPrices signatureTotalPrices = new SignatureTotalPrices();
+		
+		signatureTotalPrices.setMonthlyTotal(df.format(total/12));
+		signatureTotalPrices.setYearlyTotal(df.format(total));
+		
+		return ResponseEntity.ok(signatureTotalPrices);
+	}
+	
+	@GetMapping("/total/byCategory/{id}")
+	public ResponseEntity<SignatureTotalPrices> getTotalPricesByCategory(HttpServletRequest request,  @PathVariable String id) {
+		UserDTO user = userController.getLoggedUserDTO(request);
+		List<SignatureDTO> result =  repository.listSignatureByCategory(user.getId(), Long.valueOf(id)).stream().map(SignatureDTO::new).collect(Collectors.toList());
 		
 		Double total = 0.0;
 		for (SignatureDTO signatureDTO : result) {

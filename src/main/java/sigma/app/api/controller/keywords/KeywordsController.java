@@ -1,6 +1,7 @@
 package sigma.app.api.controller.keywords;
 
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -15,6 +16,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.transaction.Transactional;
+import sigma.app.api.controller.signature.SignatureController;
 import sigma.app.api.controller.user.UserController;
 import sigma.app.api.model.keywords.Keywords;
 import sigma.app.api.model.user.User;
@@ -31,6 +33,9 @@ public class KeywordsController {
 	
 	@Autowired
 	private KeywordsRepository repository;
+	
+	@Autowired
+	SignatureController signatureController;
 
 	@PostMapping
 	@Transactional
@@ -48,6 +53,14 @@ public class KeywordsController {
 	public ResponseEntity<List<KeywordsDTO>> listKeyword(HttpServletRequest request) {
 		UserDTO user = userController.getLoggedUserDTO(request);
 		List<KeywordsDTO> result =  repository.listKeywordsByUser(user.getId()).stream().map(KeywordsDTO::new).collect(Collectors.toList());
-		return ResponseEntity.ok(result);
+		List<KeywordsDTO> keywordsList = new ArrayList<>();
+		for(KeywordsDTO keyword : result) {
+			keyword.setSignatureCount(signatureController.countSignatureByCategory(user.getId(), keyword.getId()));
+			if(keyword.getSignatureCount() > 0) {
+				keywordsList.add(keyword);
+			}
+		}
+		
+		return ResponseEntity.ok(keywordsList);
 	}
 }
