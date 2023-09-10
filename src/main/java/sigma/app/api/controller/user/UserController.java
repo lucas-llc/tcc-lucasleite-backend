@@ -87,10 +87,28 @@ public class UserController {
 		return ResponseEntity.ok(userDTO);
 	}
 	
+	@PostMapping("/send/forgot/{email}")
+	public ResponseEntity<Boolean> sendForgotCode(@PathVariable String email) {
+		UserDTO userDTO = new UserDTO(userRepository.findUserByEmail(email));
+		if(userDTO != null && userDTO.getId() > 0) {
+			System.out.println(userDTO.getId());
+			return ResponseEntity.ok(true);
+		} else {
+			return ResponseEntity.ok(false);
+		}
+	}
+	
+	@PostMapping("/confirm/forgot/{email}/{code}")
+	public ResponseEntity<Boolean> confirmForgotCode(@PathVariable String email, @PathVariable String code) {
+		System.out.println(email);
+		System.out.println(code);
+		return ResponseEntity.ok(true);
+	}
+	
 	@GetMapping("/email/{email}")
 	public ResponseEntity<Boolean> getUserByEmail(@PathVariable String email) {
 		UserDTO userDTO = new UserDTO(userRepository.findUserByEmail(email));
-		if(userDTO.getId() > 0) {
+		if(userDTO != null && userDTO.getId() > 0) {
 			return ResponseEntity.ok(true);
 		} else {
 			return ResponseEntity.ok(false);
@@ -110,11 +128,11 @@ public class UserController {
 		return userDTO;
 	}
 	
-	@SuppressWarnings("rawtypes")
-	@DeleteMapping("/{id}")
-	@Transactional
-	public ResponseEntity deleteUser(@PathVariable String id) {
-		userRepository.deleteById(Long.valueOf(id));
-		return ResponseEntity.noContent().build();
-	}
+//	@SuppressWarnings("rawtypes")
+//	@DeleteMapping("/{id}")
+//	@Transactional
+//	public ResponseEntity deleteUser(@PathVariable String id) {
+//		userRepository.deleteById(Long.valueOf(id));
+//		return ResponseEntity.noContent().build();
+//	}
 }

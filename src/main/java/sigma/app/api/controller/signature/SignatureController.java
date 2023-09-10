@@ -26,6 +26,7 @@ import sigma.app.api.controller.user.UserController;
 import sigma.app.api.model.keywords.Keywords;
 import sigma.app.api.model.signature.Signature;
 import sigma.app.api.model.signature.SignatureDateComparator;
+import sigma.app.api.model.signature.SignatureFrequency;
 import sigma.app.api.model.signature.SignatureStatus;
 import sigma.app.api.model.user.User;
 import sigma.app.api.object.keywords.KeywordsDTO;
@@ -56,6 +57,15 @@ public class SignatureController {
 		UserDTO userDTO = userController.getLoggedUserDTO(request);
 		User user = new User(userDTO);
 		Signature signature = new Signature(signatureObject, user);
+		List<Keywords> keywordsList = new ArrayList<Keywords>();
+		if(signatureObject.getKeywords() != null) {
+			for (KeywordsDTO keywords : signatureObject.getKeywords()) {
+				Keywords key = new Keywords();
+				key.setId(keywords.getId());
+				keywordsList.add(key);
+			}
+		}
+		signature.setKeywords(keywordsList);
 		repository.save(signature);
 		SignatureDTO signatureDTO = new SignatureDTO(signature);
 		URI uri = uriBuilder.path("/signature/{id}").buildAndExpand(signature.getId()).toUri();
@@ -69,12 +79,9 @@ public class SignatureController {
 		signature.setName(signatureObject.getName());
 		signature.setDescription(signatureObject.getDescription());
 		signature.setPrice(signatureObject.getPrice());
-		signature.setStartDate(signature.getStartDate());
-		signature.setFrequency(signature.getFrequency());
-		signature.setStatus(signature.getStatus());
-		signature.setSendPush(signature.isSendPush());
-		signature.setCurrency(signature.getCurrency());
-		signature.setIconImage(signature.getIconImage());
+		signature.setStartDate(signatureObject.getStartDate());
+		signature.setFrequency(SignatureFrequency.valueOf(signatureObject.getFrequency()));
+		signature.setStatus(SignatureStatus.valueOf(signatureObject.getStatus()));
 		
 		List<Keywords> keywordsList = new ArrayList<Keywords>();
 		if(signatureObject.getKeywords() != null) {
@@ -242,15 +249,27 @@ public class SignatureController {
 		return ResponseEntity.ok(signatureTotalPrices);
 	}
 	
+	@GetMapping("/firstPayment")
+	public ResponseEntity<SignatureDTO> getFirstPaymentDate(HttpServletRequest request) {
+		UserDTO user = userController.getLoggedUserDTO(request);
+		Signature signature =  repository.getFirstPaymentDate(user.getId());
+		SignatureDTO signatureDTO = new SignatureDTO(signature);
+		
+		return ResponseEntity.ok(signatureDTO);
+	}
+	
 	@GetMapping("/calendar")
 	public ResponseEntity<List<SignatureDTO>> getCalendar(HttpServletRequest request) {
 		UserDTO user = userController.getLoggedUserDTO(request);
 		int month = Integer.valueOf(request.getParameter("month"));
+		int year = Integer.valueOf(request.getParameter("year"));
 		List<SignatureDTO> signatureList =  repository.listSignatureByUser(user.getId(), "ATIVO").stream().map(SignatureDTO::new).collect(Collectors.toList());
 		List<SignatureDTO> result = new ArrayList<SignatureDTO>();
 		Calendar todayCalendar = Calendar.getInstance();
 		todayCalendar.set(Calendar.MONTH, month);
+		todayCalendar.set(Calendar.YEAR, year);
 		Calendar startCalendar = Calendar.getInstance();
+		Calendar firstPaymentDate = Calendar.getInstance();
 		int meses = 0;
 		for (SignatureDTO signatureDTO : signatureList) {
 			meses = 0;
@@ -260,7 +279,10 @@ public class SignatureController {
 					startCalendar.set(Calendar.MONTH, todayCalendar.get(Calendar.MONTH));
 					startCalendar.set(Calendar.YEAR, todayCalendar.get(Calendar.YEAR));
 					signatureDTO.setNextPaymentDate(startCalendar.getTime());
-					result.add(signatureDTO);
+					firstPaymentDate.setTime(signatureDTO.getStartDate());
+					if(firstPaymentDate.getTime().before(signatureDTO.getNextPaymentDate())  || firstPaymentDate.getTime().equals(signatureDTO.getNextPaymentDate())) {
+						result.add(signatureDTO);
+					}
 					break;
 				case "BIMESTRAL":
 					startCalendar.setTime(signatureDTO.getStartDate());
@@ -270,7 +292,10 @@ public class SignatureController {
 						startCalendar.set(Calendar.MONTH, todayCalendar.get(Calendar.MONTH));
 						startCalendar.set(Calendar.YEAR, todayCalendar.get(Calendar.YEAR));
 						signatureDTO.setNextPaymentDate(startCalendar.getTime());
-						result.add(signatureDTO);
+						firstPaymentDate.setTime(signatureDTO.getStartDate());
+						if(firstPaymentDate.getTime().before(signatureDTO.getNextPaymentDate())  || firstPaymentDate.getTime().equals(signatureDTO.getNextPaymentDate())) {
+							result.add(signatureDTO);
+						}
 					}
 					break;
 				case "TRIMESTRAL":
@@ -281,7 +306,10 @@ public class SignatureController {
 						startCalendar.set(Calendar.MONTH, todayCalendar.get(Calendar.MONTH));
 						startCalendar.set(Calendar.YEAR, todayCalendar.get(Calendar.YEAR));
 						signatureDTO.setNextPaymentDate(startCalendar.getTime());
-						result.add(signatureDTO);
+						firstPaymentDate.setTime(signatureDTO.getStartDate());
+						if(firstPaymentDate.getTime().before(signatureDTO.getNextPaymentDate())  || firstPaymentDate.getTime().equals(signatureDTO.getNextPaymentDate())) {
+							result.add(signatureDTO);
+						}
 					}
 					break;
 				case "SEMESTRAL":
@@ -292,7 +320,10 @@ public class SignatureController {
 						startCalendar.set(Calendar.MONTH, todayCalendar.get(Calendar.MONTH));
 						startCalendar.set(Calendar.YEAR, todayCalendar.get(Calendar.YEAR));
 						signatureDTO.setNextPaymentDate(startCalendar.getTime());
-						result.add(signatureDTO);
+						firstPaymentDate.setTime(signatureDTO.getStartDate());
+						if(firstPaymentDate.getTime().before(signatureDTO.getNextPaymentDate())  || firstPaymentDate.getTime().equals(signatureDTO.getNextPaymentDate())) {
+							result.add(signatureDTO);
+						}
 					}
 					break;
 				case "ANUAL":
@@ -303,7 +334,10 @@ public class SignatureController {
 						startCalendar.set(Calendar.MONTH, todayCalendar.get(Calendar.MONTH));
 						startCalendar.set(Calendar.YEAR, todayCalendar.get(Calendar.YEAR));
 						signatureDTO.setNextPaymentDate(startCalendar.getTime());
-						result.add(signatureDTO);
+						firstPaymentDate.setTime(signatureDTO.getStartDate());
+						if(firstPaymentDate.getTime().before(signatureDTO.getNextPaymentDate())  || firstPaymentDate.getTime().equals(signatureDTO.getNextPaymentDate())) {
+							result.add(signatureDTO);
+						}
 					}
 					break;
 			}

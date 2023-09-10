@@ -49,6 +49,14 @@ public class KeywordsController {
 		return ResponseEntity.created(uri).body(keywordsDTO);
 	}
 	
+	@GetMapping("/all")
+	public ResponseEntity<List<KeywordsDTO>> listKeywordAll(HttpServletRequest request) {
+		UserDTO user = userController.getLoggedUserDTO(request);
+		List<KeywordsDTO> result =  repository.listKeywordsByUser(user.getId()).stream().map(KeywordsDTO::new).collect(Collectors.toList());
+		
+		return ResponseEntity.ok(result);
+	}
+	
 	@GetMapping
 	public ResponseEntity<List<KeywordsDTO>> listKeyword(HttpServletRequest request) {
 		UserDTO user = userController.getLoggedUserDTO(request);
