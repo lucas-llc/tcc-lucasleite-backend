@@ -1,7 +1,5 @@
 package sigma.app.api.util;
 
-import java.net.http.HttpRequest;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -29,6 +27,7 @@ public class SecurityConfigurations {
 				.and().csrf().disable().cors().and().authorizeHttpRequests()
 				.requestMatchers(HttpMethod.POST, "/login").permitAll().requestMatchers(HttpMethod.POST, "/user").permitAll().requestMatchers(HttpMethod.GET, "/user/email/{email}").permitAll()
 				.requestMatchers(HttpMethod.POST, "/user/confirm/forgot/{email}/{code}").permitAll().requestMatchers(HttpMethod.POST, "/user/send/forgot/{email}").permitAll()
+				.requestMatchers(HttpMethod.PUT, "/user/password").permitAll()
 				.anyRequest().authenticated()
 				.and().addFilterBefore(securityFilter, UsernamePasswordAuthenticationFilter.class)
 				.build();

@@ -33,6 +33,7 @@ public class User implements UserDetails {
 		this.lastName = userDTO.getLastName();
 		this.email = userDTO.getEmail();
 		this.password = new BCryptPasswordEncoder().encode(userDTO.getPassword());
+		this.code = userDTO.getCode();
 	}
 	
 	@Id
@@ -47,6 +48,8 @@ public class User implements UserDetails {
 	private String email;
 	
 	private String password;
+	
+	private String code;
 
 	public Long getId() {
 		return id;
@@ -86,6 +89,14 @@ public class User implements UserDetails {
 
 	public void setPassword(String password) {
 		this.password = password;
+	}
+	
+	public String getCode() {
+		return code;
+	}
+
+	public void setCode(String code) {
+		this.code = code;
 	}
 
 	@Override

@@ -1,6 +1,7 @@
 package sigma.app.api.controller.user;
 
 import java.net.URI;
+import java.util.Random;
 
 import jakarta.servlet.http.HttpServletRequest;
 
@@ -89,20 +90,54 @@ public class UserController {
 	
 	@PostMapping("/send/forgot/{email}")
 	public ResponseEntity<Boolean> sendForgotCode(@PathVariable String email) {
-		UserDTO userDTO = new UserDTO(userRepository.findUserByEmail(email));
-		if(userDTO != null && userDTO.getId() > 0) {
-			System.out.println(userDTO.getId());
+		User user = userRepository.findUserByEmail(email);
+		if(user != null && user.getId() > 0) {
+			user.setCode(this.sendCode());
 			return ResponseEntity.ok(true);
 		} else {
 			return ResponseEntity.ok(false);
 		}
 	}
 	
+	public String sendCode() {
+		Random random = new Random();
+        int code = random.nextInt(900000) + 100000;
+        
+//        // Chaves do AWS
+//        String accessKey = "ACCESS_KEY";
+//        String secretKey = "SECRET_KEY";
+//
+//        BasicAWSCredentials awsCredentials = new BasicAWSCredentials(accessKey, secretKey);
+//
+//        // SES
+//        AmazonSimpleEmailService client = AmazonSimpleEmailServiceClient.builder()
+//                .withCredentials(new AWSStaticCredentialsProvider(awsCredentials))
+//                .withRegion("us-west-2")
+//                .build();
+//
+//        // Crie um objeto SendEmailRequest com as informações do e-mail
+//        SendEmailRequest request = new SendEmailRequest()
+//                .withDestination(new Destination().withToAddresses("destinatario@example.com"))
+//                .withMessage(new Message()
+//                        .withBody(new Body().withText(new Content("Código para recuperar senha:" + code)))
+//                        .withSubject(new Content("Recuperar senha")))
+//                .withSource("remetente@example.com");
+//
+//        // Envie o e-mail
+//        SendEmailResult result = client.sendEmail(request);
+//        System.out.println("E-mail enviado com sucesso! ID da mensagem: " + result.getMessageId());
+        
+        return String.valueOf(code);
+	}
+	
 	@PostMapping("/confirm/forgot/{email}/{code}")
 	public ResponseEntity<Boolean> confirmForgotCode(@PathVariable String email, @PathVariable String code) {
-		System.out.println(email);
-		System.out.println(code);
-		return ResponseEntity.ok(true);
+		User user = userRepository.findUserByEmail(email);
+		if(user.getCode().equals(code)) {
+			return ResponseEntity.ok(true);
+		} else {
+			return ResponseEntity.ok(false);
+		}
 	}
 	
 	@GetMapping("/email/{email}")
@@ -113,6 +148,19 @@ public class UserController {
 		} else {
 			return ResponseEntity.ok(false);
 		}
+	}
+	
+	@PutMapping("/password")
+	@Transactional
+	public ResponseEntity<UserDTO> updateUserPassword(@RequestBody UserDTO userObject) {
+		User user = userRepository.findUserByEmail(userObject.getEmail());
+		if(userObject.getPassword() != null && !userObject.getPassword().isEmpty() && userObject.getCode().equals(user.getCode())) {
+			user.setPassword(new BCryptPasswordEncoder().encode(userObject.getPassword()));
+		}
+		
+		UserDTO userDTO = new UserDTO(user);
+		
+		return ResponseEntity.ok(userDTO);
 	}
 	
 	@GetMapping("/logged")
@@ -127,12 +175,5 @@ public class UserController {
 		UserDTO userDTO = new UserDTO(userRepository.findUserByEmail(user.getUsername()));
 		return userDTO;
 	}
-	
-//	@SuppressWarnings("rawtypes")
-//	@DeleteMapping("/{id}")
-//	@Transactional
-//	public ResponseEntity deleteUser(@PathVariable String id) {
-//		userRepository.deleteById(Long.valueOf(id));
-//		return ResponseEntity.noContent().build();
-//	}
+
 }
